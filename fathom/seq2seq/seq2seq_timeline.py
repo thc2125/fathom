@@ -5,6 +5,7 @@ import numpy as np
 from tensorflow.python.client import timeline
 
 import math
+import os
 import random
 import sys
 import time
@@ -257,9 +258,16 @@ class Seq2Seq(NeuralNetworkModel):
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     values = tf.RunMetadata()
 
-    log_dir = os.path.join('..','..','logs','seq2seq', 'tf_tools', 'summary')
+    log_dir = os.path.join('..','..','logs','seq2seq', 'tf_tools', 'timeline')
     while True:
       if current_step >= n_steps:
+        # Timeline code copied from / inspired by
+        # https://stackoverflow.com/questions/34293714/can-i-measure-the-execution-time-of-individual-operations-with-tensorflow
+        tl = timeline.Timeline(values.step_stats)
+        ctf = tl.generate_chrome_trace_format()
+        with open(log_dir + 'timeline.json', 'w') as tl_file:
+           tl_file.write(ctf)
+
         return
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
@@ -339,12 +347,6 @@ class Seq2Seq(NeuralNetworkModel):
 
           sys.stdout.flush()
 
-    # Timeline code copied from / inspired by
-    # https://stackoverflow.com/questions/34293714/can-i-measure-the-execution-time-of-individual-operations-with-tensorflow
-    tl = timeline.Timeline(values.step_stats)
-    ctf = tl.generate_chrome_trace_format()
-    with open(log_dir + 'timeline.json', 'w') as tl_file:
-       tl_file.write(ctf)
 
   def step_feeds(self, encoder_inputs, decoder_inputs, target_weights,
            bucket_id, forward_only):
