@@ -152,7 +152,7 @@ class Seq2Seq(NeuralNetworkModel):
 
   def load_data(self):
     # TODO: make configurable
-    self.data_dir = "/data/WMT15/"
+    self.data_dir = "../../data/WMT15/"
 
     print("Preparing WMT data in %s" % self.data_dir)
     en_train, fr_train, en_dev, fr_dev, _, _ = data_utils.prepare_wmt_data(
